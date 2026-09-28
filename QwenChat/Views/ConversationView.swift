@@ -22,7 +22,7 @@ struct ConversationView: View {
             }
         }
         .padding(.vertical, 8)
-        .defaultScrollAnchor(.bottom, for: .sizeChanges)
+        .defaultScrollAnchor(.bottom)
     }
 }
 
