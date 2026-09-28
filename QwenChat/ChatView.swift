@@ -46,6 +46,8 @@ import UniformTypeIdentifiers
 struct ChatView: View {
     /// View model that manages the chat state and business logic
     @Bindable private var vm: ChatViewModel
+    @State private var pluginRegistry = PluginRegistry()
+    @State private var isShowingPlugins = false
 
     #if os(iOS)
         /// Selected items from PhotosPicker
@@ -86,6 +88,17 @@ struct ChatView: View {
             .navigationTitle("My Private AI")
             .toolbar {
                 ChatToolbarView(vm: vm)
+                Button {
+                    isShowingPlugins = true
+                } label: {
+                    Label("Plugins", systemImage: "puzzlepiece.extension")
+                }
+            }
+            .sheet(isPresented: $isShowingPlugins) {
+                PluginCatalogView(registry: pluginRegistry) { item in
+                    isShowingPlugins = false
+                    Task { await vm.summarizePluginItem(item) }
+                }
             }
             // Handle media file selection
             #if os(iOS)
