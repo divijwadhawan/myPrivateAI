@@ -1,10 +1,17 @@
+//
+//  QwenChatApp.swift
+//  MLXChatExample
+//
+//  Created by İbrahim Çetin on 20.04.2025.
+//
+
 import SwiftUI
 
 @main
 struct QwenChatApp: App {
     var body: some Scene {
         WindowGroup {
-            ChatScreen()
+            ChatView(viewModel: ChatViewModel(mlxService: MLXService()))
         }
     }
 }

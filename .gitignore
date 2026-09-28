@@ -1,5 +1,10 @@
+# Xcode generated files
 .DS_Store
 DerivedData/
-.build/
 *.xcuserstate
 xcuserdata/
+.build/
+.swiftpm/
+# Model weights stay on the device
+*.safetensors
+*.gguf

@@ -1,28 +1,24 @@
-# myPrivateAI
+# My Private AI — local Qwen chat for iPhone
 
-An experimental iPhone chat app built with SwiftUI. The original goal was a ChatGPT-style interface using [Exyte Chat](https://github.com/exyte/Chat), followed by on-device Qwen3-0.6B inference.
+A standalone SwiftUI iOS app based on the [MLX Chat Example](https://github.com/ml-explore/mlx-swift-examples/tree/main/Applications/MLXChatExample). It downloads a selected Qwen model and generates chat replies locally with MLX. The included models are Qwen3 0.6B, 1.7B, 4B and Qwen2.5 VL 3B for image chat. Downloading a model requires internet; inference after download runs on device. No model weights, backend, account, or API key are included.
 
-## Status: paused (28 September 2026)
+## Open on your Mac
 
-The repository contains a SwiftUI app, an Exyte Chat screen, and `DemoAssistant.swift`, which returns a fixed demonstration reply. **Qwen is not integrated.** The iPhone app has not been confirmed to launch successfully. Work is paused while we choose a simpler chat UI approach for a later session.
+1. Open `QwenChat.xcodeproj` with current Xcode and let Swift Package Manager resolve the dependencies.
+2. Select the `QwenChat` scheme and your physical iPhone. Set your Apple Development Team in **Signing & Capabilities**. If necessary, change the bundle identifier to one you control.
+3. Build and run, select **Qwen3 0.6B (4-bit)** and send your first message. The initial model download may take time and needs storage and internet. Larger models require more RAM; use the smallest one first.
+4. To send a photo, switch to **Qwen2.5 VL 3B** and use the attachment button.
 
-## What we tried
+## Architecture
 
-1. Created `QwenChat.xcodeproj`, `ChatScreen.swift`, and `DemoAssistant.swift`. The app was intended to show messages through Exyte Chat before connecting an offline model.
-2. An initial build failed inside MediaPicker with an initializer-label mismatch. We changed the Exyte Chat package reference in the repository to a specific revision; the app then built on the user's Mac.
-3. Launch on an iPhone failed with `Library not loaded: @rpath/GiphyUISDK.framework/GiphyUISDK`. The repository was updated to link Giphy directly, but merely listing the package in Xcode did not establish that its binary framework was embedded in the installed app.
-4. Locally in Xcode, we tried Exyte Chat 2.1.4 with MediaPicker 2.0.0 to avoid Giphy. MediaPicker 2.0.0 lacked `setSelectionParameters` and `SelectionParamsHolder`; version 2.2.4 contained both. These local package changes were **not committed to this repository**.
-5. On Xcode 27.0, a fresh build with the older package combination still failed during linking with undefined symbols for multiple `ExyteChat.ChatView` state initializers. Deleting QwenChat DerivedData did not clear the linker failure. The build transcript showed that ExyteChat compiled and was included in the app link; it also showed a remaining direct Giphy dependency. The exact cause of the unresolved symbols was **not established**.
+`SwiftUI Views → ChatViewModel → MLXService → MLX Swift LM → downloaded Qwen model`
 
-## Why we paused
+The app keeps the active conversation in memory. Model files are stored in the app cache; iOS can evict cached files, in which case a download is needed again. Chat history is not persisted across launches. No server receives your prompts during ordinary local chat. Model downloads contact Hugging Face.
 
-The chat interface is still only a demo, but package integration has consumed several rounds of build and runtime troubleshooting. We decided to stop changing dependencies and revisit the UI later. A small chat screen made with native SwiftUI is the leading alternative: it would keep the message flow easy to understand and let us add on-device Qwen inference without Exyte's media and Giphy dependencies. This is a proposal for the next session, not an implemented change.
+## Verification status
 
-## When resuming
+The repository contains a standalone Xcode project and upstream Swift source. This environment cannot run Xcode or install on an iPhone; the Xcode build, signing, initial download, and on-device inference still need to be verified on a Mac and iPhone. Dependencies are declared using the versions referenced by the upstream example at integration time.
 
-- First inspect the **local Xcode project and `git status`** before pulling or editing: the local package and signing changes may differ from `main`.
-- Decide whether to replace Exyte Chat with a native SwiftUI chat screen, or isolate the Exyte/Xcode 27 linker failure in Exyte's example project.
-- Get a simple chat interface running on the iPhone with the demo response.
-- Then add local Qwen3-0.6B model loading and response generation.
+## Attribution
 
-The GitHub `main` branch still contains the Exyte-based starter. The documented local experiments are not represented as committed fixes.
+Based on the MLX Swift Examples project, copyright its contributors, under the MIT license included in `LICENSE`. App source is adapted from `Applications/MLXChatExample` (upstream snapshot).
