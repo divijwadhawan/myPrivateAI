@@ -1,38 +1,39 @@
-# My Private AI — local Qwen chat for iPhone
+# On-Device AI Chat for iOS
 
-A standalone SwiftUI iOS app based on the [MLX Chat Example](https://github.com/ml-explore/mlx-swift-examples/tree/main/Applications/MLXChatExample). It downloads a selected Qwen model and generates chat replies locally with MLX. The included models are Qwen3 0.6B, 1.7B, 4B and Qwen2.5 VL 3B for image chat. Downloading a model requires internet; inference after download runs on device. No model weights or backend are included. The optional Gmail plugin requires your own Google OAuth configuration.
+A SwiftUI application that downloads Qwen models and runs chat inference locally on an iPhone using MLX. An optional Gmail plugin retrieves selected messages for local summarization.
 
-## Open on your Mac
+**Status:** implemented prototype adapted from the MLX Chat Example; device compatibility and performance must be verified for each model.
 
-1. Open `QwenChat.xcodeproj` with current Xcode and let Swift Package Manager resolve the dependencies.
-2. Select the `QwenChat` scheme and your physical iPhone. Set your Apple Development Team in **Signing & Capabilities**. If necessary, change the bundle identifier to one you control.
-3. Build and run, select **Qwen3 0.6B (4-bit)** and send your first message. The initial model download may take time and needs storage and internet. Larger models require more RAM; use the smallest one first.
-4. To send a photo, switch to **Qwen2.5 VL 3B** and use the attachment button.
+## Demo
+Download the smallest model, send a prompt, then optionally select a vision model and attach a photo. See [demo steps](docs/demo.md).
 
-## Architecture
+## Implemented features
+- Model selection and download, local text generation and vision-model support.
+- Chat interface with download progress and generation information.
+- Plugin interface and optional read-only Gmail integration.
 
-`SwiftUI Views → ChatViewModel → MLXService → MLX Swift LM → downloaded Qwen model`
+## Architecture and stack
+SwiftUI views → ChatViewModel → MLXService → MLX Swift LM → downloaded model.
 
-## Plugins
+Source remains in `QwenChat/`, with `Models/`, `Views/`, `ViewModels/`, `Services/`, `Plugins/` and `Support/`. See [architecture](docs/architecture.md).
 
-The puzzle-piece button opens the plugin catalog. `AppPlugin` defines a small interface for connecting, disconnecting, and searching a service. `PluginRegistry` lists the installed plugins. A plugin returns `PluginItem` values; only after you tap an item does the app give its content to the local model for summarization. A future plugin can implement the same protocol and register itself without changing the chat model. Plugins are explicit actions in the UI; the model does not execute arbitrary external requests or send mail.
+## Quick start
+1. Open `QwenChat.xcodeproj` in Xcode and resolve Swift packages.
+2. Configure your development team and signing; choose a physical iPhone.
+3. Run the app and download Qwen3 0.6B first.
+4. Configure Gmail only if needed using [setup instructions](docs/setup.md).
 
-### Gmail setup (one time)
+The project declares iOS 17.0 as its deployment target. Package requirements may impose additional toolchain constraints.
 
-1. In [Google Cloud Console](https://console.cloud.google.com/), create or select a project and **enable the Gmail API**.
-2. Configure the OAuth consent screen. For a personal testing app, add your Google account(s) as **test users**. Add the Gmail read-only scope (`https://www.googleapis.com/auth/gmail.readonly`). Google classifies broad Gmail scopes as restricted; distribution beyond personal testing may require OAuth verification and further review.
-3. Create an **iOS OAuth client** with bundle ID `com.divijwadhawan.QwenChat`, or set the Xcode target's bundle identifier and OAuth client to the same value.
-4. Open `QwenChat/Info.plist`. Replace `REPLACE_WITH_IOS_CLIENT_ID` with the iOS client ID and `com.example.myprivateai.gmail` with its reversed URL scheme from Google Cloud Console (usually `com.googleusercontent.apps.<identifier>`). These are client identifiers, not client secrets.
-5. Build on your iPhone. Open **Plugins → Gmail → Connect Gmail** and authorize read-only access. Search using Gmail syntax such as `is:unread` or `from:example.com newer_than:7d`, then tap a result to summarize it with the selected on-device model.
+## Project scope and attribution
+Adapted from [MLX Swift Examples](https://github.com/ml-explore/mlx-swift-examples/tree/main/Applications/MLXChatExample). The repository adds standalone app integration and plugin-related source; it does not implement or train the underlying Qwen models or MLX engine. Upstream source attribution is retained.
 
-The Gmail plugin reads at most 10 matching messages per search. It never sends, deletes, archives, or drafts email. Gmail API requests require internet. Google Sign-In manages its own credentials; the app does not put tokens in the model prompt. The selected message text is processed by the on-device model and remains in the current in-memory conversation. Gmail OAuth setup must be completed before the plugin can connect. Google may limit unverified apps to configured test users.
+## Validation and limitations
+No Mac/iPhone build or inference benchmark was run in this documentation update. No tested-device performance figures are claimed.
 
-The app keeps the active conversation in memory. Model files are stored in the app cache; iOS can evict cached files, in which case a download is needed again. Chat history is not persisted across launches. No server receives your prompts during ordinary local chat. Model downloads contact Hugging Face.
+Chat history is in memory. Models reside in a cache which iOS may evict. Downloads and Gmail requests need internet; ordinary local inference runs on device after download. Larger models require more memory.
 
-## Verification status
+## Documentation and license
+[Setup](docs/setup.md) · [Architecture](docs/architecture.md) · [Demo](docs/demo.md)
 
-The repository contains a standalone Xcode project and upstream Swift source. This environment cannot run Xcode or install on an iPhone; the Xcode build, signing, initial download, and on-device inference still need to be verified on a Mac and iPhone. Dependencies are declared using the versions referenced by the upstream example at integration time.
-
-## Attribution
-
-Based on the MLX Swift Examples project, copyright its contributors, under the MIT license included in `LICENSE`. App source is adapted from `Applications/MLXChatExample` (upstream snapshot).
+MIT licence: see [LICENSE](LICENSE). Model weights have their own licences.
